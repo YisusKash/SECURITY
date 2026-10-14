@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0e0c">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>bóveda</title>
+<style>
+:root{
+  --bg:#0a0e0c; --panel:#0f1511; --panel2:#131b16; --line:#1c2a21;
+  --tx:#c8d5cc; --mut:#6f8577; --ac:#3ddc84; --ac2:#2a9d62; --bad:#ff6b66;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 var(--mono)}
+body{min-height:100dvh;padding:env(safe-area-inset-top) 16px calc(32px + env(safe-area-inset-bottom))}
+body.noscroll{overflow:hidden}
+#app{max-width:520px;margin:0 auto;padding-top:20px}
+b{font-weight:600}
+.mut{color:var(--mut)}
+.warn{color:var(--bad);font-weight:400}
+.err{color:var(--bad);min-height:1.5em;margin:6px 0 10px;font-size:13px}
+
+.brand{font-size:20px;letter-spacing:.02em;margin:0 0 18px}
+.brand .pr{color:var(--ac)}
+.brand .cur{color:var(--ac);animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.brand .cur{animation:none}}
+
+input,textarea{
+  width:100%;background:#0c120e;border:1px solid var(--line);color:var(--tx);
+  border-radius:8px;padding:12px;font:16px var(--mono);margin:0 0 10px;outline:none;
+}
+textarea{resize:vertical}
+input:focus,textarea:focus{border-color:var(--ac2);box-shadow:0 0 0 3px rgba(61,220,132,.12)}
+input::placeholder,textarea::placeholder{color:#44564b}
+input[type=range]{padding:0;border:0;background:none;box-shadow:none;accent-color:var(--ac);margin:0}
+input[type=checkbox]{width:auto;margin:0 6px 0 0;accent-color:var(--ac)}
+input[type=file]{font-size:14px}
+
+.btn,.mini,.link{font-family:var(--mono);cursor:pointer}
+.btn{
+  min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--line);
+  background:var(--panel2);color:var(--tx);font-size:14px;
+}
+.btn:hover{border-color:var(--ac2)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:#04140a;font-weight:600;width:100%}
+.btn.pri.auto{width:auto}
+.btn.bad{color:var(--bad);border-color:#3a1f1e}
+.btn.sm{min-height:38px;padding:0 12px}
+.link{background:none;border:0;color:var(--mut);padding:14px 0 0;font-size:13px;text-decoration:underline;text-underline-offset:3px;display:block}
+.link.inline{display:inline;padding:0;color:var(--ac)}
+.mini{
+  background:none;border:1px solid var(--line);color:var(--mut);border-radius:6px;
+  padding:4px 9px;font-size:12px;min-height:30px;
+}
+.mini:hover{color:var(--ac);border-color:var(--ac2)}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.top .brand{margin:0}
+.acts{display:flex;gap:8px}
+.note{font-size:12.5px;color:var(--mut);border:1px dashed var(--line);border-radius:8px;padding:9px 12px;margin-bottom:12px}
+
+.list{display:flex;flex-direction:column;gap:8px}
+.row{
+  display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:11px 14px;
+  color:var(--tx);font-family:var(--mono);cursor:pointer;
+}
+.row:hover,.row:focus-visible{border-color:var(--ac2);outline:none}
+.rt{display:flex;align-items:center;gap:8px}
+.nm{font-size:15px;font-weight:600}
+.sub{font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:10px;letter-spacing:.08em;color:var(--ac);border:1px solid var(--ac2);border-radius:4px;padding:0 5px}
+.empty{color:var(--mut);padding:28px 4px;font-size:13.5px}
+
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:10;display:flex;align-items:flex-end;justify-content:center}
+.sheet{
+  width:min(100%,560px);max-height:90dvh;overflow:auto;background:var(--panel);
+  border:1px solid var(--line);border-bottom:0;border-radius:14px 14px 0 0;
+  padding:16px 18px calc(20px + env(safe-area-inset-bottom));animation:up .16s ease-out;
+}
+@keyframes up{from{transform:translateY(24px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.sh h2{margin:0;font-size:16px;color:var(--ac);word-break:break-word}
+.sh h2::before{content:'> ';color:var(--ac2)}
+
+.f{padding:12px 0;border-bottom:1px solid var(--line)}
+.lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
+.lbl::before{content:'// ';color:var(--ac2)}
+.fr{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.val{flex:1;min-width:0;word-break:break-all;white-space:pre-wrap}
+.val a{color:var(--ac)}
+.fb{display:flex;gap:6px;flex:none}
+.code{font-size:30px;letter-spacing:.14em;color:var(--ac)}
+.bar{height:2px;background:var(--line);border-radius:2px;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:var(--ac2);transition:width .9s linear}
+.btns{display:flex;gap:8px;margin-top:16px}
+.btns .btn{flex:1}
+.pwrow{display:flex;gap:8px;align-items:flex-start}
+.pwrow input{flex:1;margin:0}
+.fld{margin-bottom:10px}
+.fld>.lbl{margin-top:4px}
+.gen{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;margin:10px 0 14px;font-size:13px;color:var(--mut)}
+.gl{display:flex;align-items:center;gap:8px}
+.gl.chk{cursor:pointer}
+.out{font-size:18px;word-break:break-all;padding:14px;background:#0c120e;border:1px solid var(--line);border-radius:8px;color:var(--ac);margin:10px 0 0}
+.menu{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.menu .btn{text-align:left}
+.foot{font-size:12px;color:var(--mut);margin-top:14px}
+
+#toast{
+  position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,12px);
+  background:var(--panel2);border:1px solid var(--ac2);color:var(--ac);padding:9px 14px;border-radius:8px;
+  font-size:13px;opacity:0;pointer-events:none;transition:.18s;z-index:20;max-width:90vw;text-align:center
+}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" role="status"></div>
+<noscript>Necesitas JavaScript para usar la bóveda.</noscript>
+
+<script>
+'use strict';
+
+/* ---------- utilidades ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const enc = new TextEncoder(), dec = new TextDecoder();
+const LS_KEY = 'boveda.v1', LS_DIRTY = 'boveda.sinRespaldar';
+const ITER = 600000;
+const AAD = enc.encode('boveda-v1');
+const IDLE_MS = 3 * 60 * 1000;
+const today = () => new Date().toISOString().slice(0, 10);
+
+function h(tag, props = {}, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'value') el.value = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else if (v === true) el.setAttribute(k, '');
+    else el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    el.append(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return el;
+}
+
+const b64 = {
+  to(buf) {
+    const u = new Uint8Array(buf); let s = '';
+    for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+    return btoa(s);
+  },
+  from: (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0)),
+};
+
+function readRaw() { try { return localStorage.getItem(LS_KEY); } catch { return null; } }
+function newId() { return Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(16).padStart(2, '0')).join(''); }
+
+let toastT;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2400);
+}
+
+let clipT;
+async function copy(text, label) {
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; }
+  catch {
+    const ta = h('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text;
+    document.body.append(ta); ta.select();
+    try { ok = document.execCommand('copy'); } catch {}
+    ta.remove();
+  }
+  if (!ok) return toast('no pude copiar');
+  toast((label || 'texto') + ' copiado · se borra en 30s');
+  clearTimeout(clipT);
+  clipT = setTimeout(() => { navigator.clipboard?.writeText(' ').catch(() => {}); }, 30000);
+}
+
+/* ---------- cifrado ---------- */
+async function deriveKey(pw, salt, iter) {
+  const base = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+  );
+}
+
+let state = null; // { key, salt, iter, data:{entries:[]} }
+
+async function seal() {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv, additionalData: AAD }, state.key, enc.encode(JSON.stringify(state.data))
+  );
+  return { v: 1, kdf: 'PBKDF2-SHA256', iter: state.iter, salt: b64.to(state.salt), iv: b64.to(iv), ct: b64.to(ct) };
+}
+
+async function persist() { localStorage.setItem(LS_KEY, JSON.stringify(await seal())); }
+
+async function save() {
+  try { await persist(); localStorage.setItem(LS_DIRTY, '1'); return true; }
+  catch { toast('⚠ no se pudo guardar en este navegador'); return false; }
+}
+
+async function openBlob(blob, pw) {
+  try {
+    const salt = b64.from(blob.salt);
+    const key = await deriveKey(pw, salt, blob.iter);
+    const pt = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: b64.from(blob.iv), additionalData: AAD }, key, b64.from(blob.ct)
+    );
+    const data = JSON.parse(dec.decode(pt));
+    if (!data || !Array.isArray(data.entries)) return null;
+    return { key, salt, iter: blob.iter, data };
+  } catch { return null; }
+}
+
+function validBlob(j) {
+  return j && j.v === 1 && typeof j.salt === 'string' && typeof j.iv === 'string' && typeof j.ct === 'string'
+    && Number.isInteger(j.iter) && j.iter >= 100000 && j.iter <= 5000000;
+}
+
+/* ---------- generador de contraseñas ---------- */
+const genOpts = { len: 20, sym: true };
+function randInt(max) {
+  const lim = Math.floor(0x100000000 / max) * max, a = new Uint32Array(1);
+  do { crypto.getRandomValues(a); } while (a[0] >= lim);
+  return a[0] % max;
+}
+function genPass(len, sym) {
+  const sets = ['abcdefghijkmnopqrstuvwxyz', 'ABCDEFGHJKLMNPQRSTUVWXYZ', '23456789'];
+  if (sym) sets.push('!@#$%^&*-_=+?');
+  const pool = sets.join('');
+  const out = sets.map((s) => s[randInt(s.length)]);
+  while (out.length < len) out.push(pool[randInt(pool.length)]);
+  for (let i = out.length - 1; i > 0; i--) { const j = randInt(i + 1); [out[i], out[j]] = [out[j], out[i]]; }
+  return out.join('');
+}
+
+/* ---------- TOTP (RFC 6238) ---------- */
+function b32dec(s) {
+  const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let bits = 0, val = 0; const out = [];
+  for (const c of s.replace(/[\s=-]/g, '').toUpperCase()) {
+    const i = A.indexOf(c);
+    if (i < 0) throw new Error('base32');
+    val = (val << 5) | i; bits += 5;
+    if (bits >= 8) { out.push((val >>> (bits - 8)) & 255); bits -= 8; val &= (1 << bits) - 1; }
+  }
+  return new Uint8Array(out);
+}
+function normalizeTotp(t) {
+  try {
+    if (/^otpauth:\/\//i.test(t)) t = new URL(t).searchParams.get('secret') || '';
+    t = t.replace(/[\s-]/g, '').toUpperCase();
+    return t && b32dec(t).length ? t : null;
+  } catch { return null; }
+}
+async function totp(secret) {
+  const key = await crypto.subtle.importKey('raw', b32dec(secret), { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
+  const t = Math.floor(Date.now() / 30000), msg = new ArrayBuffer(8), dv = new DataView(msg);
+  dv.setUint32(0, Math.floor(t / 2 ** 32)); dv.setUint32(4, t >>> 0);
+  const d = new Uint8Array(await crypto.subtle.sign('HMAC', key, msg)), o = d[19] & 15;
+  const n = ((d[o] & 0x7f) << 24) | (d[o + 1] << 16) | (d[o + 2] << 8) | d[o + 3];
+  return String(n % 1e6).padStart(6, '0');
+}
+
+/* ---------- bloqueo automático ---------- */
+let idleT, hiddenAt = 0;
+function bump() { if (!state) return; clearTimeout(idleT); idleT = setTimeout(lock, IDLE_MS); }
+['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach((e) => addEventListener(e, bump, { passive: true }));
+document.addEventListener('visibilitychange', () => {
+  if (!state) return;
+  if (document.hidden) hiddenAt = Date.now();
+  else if (Date.now() - hiddenAt > 60000) lock();
+});
+function lock() { if (!state) return; state = null; q = ''; closeSheet(); clearTimeout(idleT); render(); }
+
+/* ---------- hojas (modales) ---------- */
+let sheet = null, tickT = null;
+function openSheet(content) {
+  if (sheet) sheet.remove();
+  const scrim = h('div', { class: 'scrim', onclick: (e) => { if (e.target === scrim) closeSheet(); } },
+    h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true' }, content));
+  document.body.append(scrim); document.body.classList.add('noscroll'); sheet = scrim;
+}
+function closeSheet() {
+  clearInterval(tickT); tickT = null;
+  if (sheet) { sheet.remove(); sheet = null; }
+  document.body.classList.remove('noscroll');
+}
+addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+const sheetHead = (title) => h('div', { class: 'sh' }, h('h2', {}, title),
+  h('button', { class: 'mini', type: 'button', 'aria-label': 'cerrar', onclick: closeSheet }, 'cerrar'));
+
+/* ---------- vistas ---------- */
+let q = '';
+const brand = () => h('div', { class: 'brand' }, h('span', { class: 'pr' }, '>'), ' bóveda', h('span', { class: 'cur' }, '_'));
+
+function render() {
+  const app = $('#app'); app.replaceChildren();
+  app.append(state ? mainView() : readRaw() ? lockView() : setupView());
+}
+
+function setupView() {
+  const pw = h('input', { type: 'password', autocomplete: 'new-password', placeholder: 'contraseña maestra (mín. 10)', 'aria-label': 'contraseña maestra' });
+  const pw2 = h('input', { type: 'password', autocomplete: 'new-password', placeholder: 'repítela', 'aria-label': 'repetir contraseña' });
+  const err = h('div', { class: 'err' });
+  const btn = h('button', { class: 'btn pri', type: 'button' }, 'crear bóveda');
+  const go = async () => {
+    err.textContent = '';
+    if (pw.value.length < 10) return (err.textContent = 'mínimo 10 caracteres. mejor una frase larga.');
+    if (pw.value !== pw2.value) return (err.textContent = 'no coinciden.');
+    btn.disabled = true; btn.textContent = 'cifrando…';
+    try {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      state = { key: await deriveKey(pw.value, salt, ITER), salt, iter: ITER, data: { entries: [] } };
+      await persist(); bump(); render();
+    } catch (e) {
+      state = null; err.textContent = 'no pude guardar: este navegador no deja almacenar datos.';
+      btn.disabled = false; btn.textContent = 'crear bóveda';
+    }
+  };
+  btn.addEventListener('click', go);
+  pw2.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+  return h('div', {}, brand(),
+    h('p', { class: 'mut' }, '// crea tu contraseña maestra. cifra todo lo que guardes. ',
+      h('b', { class: 'warn' }, 'si la olvidas, no hay forma de recuperarla.')),
+    pw, pw2, err, btn,
+    h('button', { class: 'link', type: 'button', onclick: openImport }, 'ya tengo un respaldo → importar'));
+}
+
+function lockView() {
+  const pw = h('input', { type: 'password', autocomplete: 'current-password', placeholder: 'contraseña maestra', 'aria-label': 'contraseña maestra' });
+  const err = h('div', { class: 'err' });
+  const btn = h('button', { class: 'btn pri', type: 'button' }, 'abrir');
+  const reset = () => { btn.disabled = false; btn.textContent = 'abrir'; };
+  const go = async () => {
+    if (!pw.value) return;
+    err.textContent = ''; btn.disabled = true; btn.textContent = 'descifrando…';
+    let blob; try { blob = JSON.parse(readRaw()); } catch { blob = null; }
+    const s = validBlob(blob) ? await openBlob(blob, pw.value) : null;
+    if (!s) { err.textContent = 'contraseña incorrecta (o datos dañados).'; reset(); pw.select(); return; }
+    state = s; pw.value = ''; bump(); render();
+  };
+  btn.addEventListener('click', go);
+  pw.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+  setTimeout(() => pw.focus(), 50);
+  return h('div', {}, brand(), h('p', { class: 'mut' }, '// bóveda bloqueada'), pw, err, btn,
+    h('button', { class: 'link', type: 'button', onclick: openImport }, 'importar un respaldo'));
+}
+
+function mainView() {
+  const list = h('div', { class: 'list' });
+  function fill() {
+    list.replaceChildren();
+    const t = q.trim().toLowerCase();
+    const items = state.data.entries
+      .filter((x) => !t || [x.nombre, x.usuario, x.url, x.notas].some((v) => (v || '').toLowerCase().includes(t)))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    if (!items.length) {
+      list.append(h('div', { class: 'empty' }, state.data.entries.length ? '// sin resultados' : '// vacío. agrega tu primera cuenta con [+ nuevo]'));
+      return;
+    }
+    for (const x of items) {
+      list.append(h('button', { class: 'row', type: 'button', onclick: () => openDetail(x.id) },
+        h('span', { class: 'rt' }, h('span', { class: 'nm' }, x.nombre), x.totp ? h('span', { class: 'tag' }, '2FA') : null),
+        h('span', { class: 'sub' }, x.usuario || '—')));
+    }
+  }
+  const search = h('input', { type: 'search', placeholder: 'buscar…', value: q, autocomplete: 'off', 'aria-label': 'buscar', oninput: (e) => { q = e.target.value; fill(); } });
+  let dirty = false; try { dirty = localStorage.getItem(LS_DIRTY) === '1'; } catch {}
+  fill();
+  return h('div', {},
+    h('div', { class: 'top' }, brand(),
+      h('div', { class: 'acts' },
+        h('button', { class: 'btn pri auto sm', type: 'button', onclick: () => openForm(null) }, '+ nuevo'),
+        h('button', { class: 'btn sm', type: 'button', onclick: lock }, 'lock'),
+        h('button', { class: 'btn sm', type: 'button', onclick: openMenu }, 'menú'))),
+    dirty && state.data.entries.length
+      ? h('div', { class: 'note' }, '// cambios sin respaldar. ', h('button', { class: 'link inline', type: 'button', onclick: exportBackup }, 'exportar ahora'))
+      : null,
+    search, list);
+}
+
+/* ---------- detalle ---------- */
+function openDetail(id) {
+  closeSheet();
+  const x = state.data.entries.find((e) => e.id === id); if (!x) return;
+  const mask = (v) => '•'.repeat(Math.min(v.length, 16));
+  const field = (label, value, o = {}) => {
+    if (!value) return null;
+    let shown = !o.secret;
+    const val = h('div', { class: 'val' });
+    const paint = () => {
+      val.replaceChildren();
+      if (o.secret && !shown) val.append(mask(value));
+      else if (o.link && /^https?:\/\//i.test(value)) val.append(h('a', { href: value, target: '_blank', rel: 'noopener noreferrer' }, value));
+      else val.append(value);
+    };
+    paint();
+    const eye = o.secret ? h('button', { class: 'mini', type: 'button', onclick: (e) => { shown = !shown; paint(); e.target.textContent = shown ? 'ocultar' : 'ver'; } }, 'ver') : null;
+    return h('div', { class: 'f' }, h('div', { class: 'lbl' }, label),
+      h('div', { class: 'fr' }, val, h('div', { class: 'fb' }, eye, h('button', { class: 'mini', type: 'button', onclick: () => copy(value, label) }, 'copiar'))));
+  };
+
+  const wrap = h('div', {}, sheetHead(x.nombre),
+    field('correo / usuario', x.usuario),
+    field('contraseña', x.contrasena, { secret: true }),
+    field('url', x.url, { link: true }));
+
+  if (x.totp) {
+    const code = h('div', { class: 'code' }, '······');
+    const fill = h('i'); const secs = h('span', { class: 'mut' });
+    let cur = '';
+    const tick = async () => {
+      try { cur = await totp(x.totp); } catch { cur = ''; }
+      const s = 30 - (Math.floor(Date.now() / 1000) % 30);
+      code.textContent = cur ? cur.slice(0, 3) + ' ' + cur.slice(3) : 'secreto inválido';
+      secs.textContent = s + 's'; fill.style.width = (s / 30) * 100 + '%';
+    };
+    tick(); tickT = setInterval(tick, 1000);
+    wrap.append(h('div', { class: 'f' }, h('div', { class: 'lbl' }, 'código 2fa'),
+      h('div', { class: 'fr' }, code, h('div', { class: 'fb' }, h('button', { class: 'mini', type: 'button', onclick: () => cur && copy(cur, 'código') }, 'copiar'))),
+      h('div', { class: 'bar' }, fill), secs));
+  }
+  wrap.append(field('notas', x.notas));
+  wrap.append(h('div', { class: 'foot' }, 'actualizado: ' + (x.actualizado || '').slice(0, 10)));
+
+  let armed = false;
+  const del = h('button', { class: 'btn bad', type: 'button' }, 'borrar');
+  del.addEventListener('click', async () => {
+    if (!armed) { armed = true; del.textContent = '¿seguro? toca otra vez'; setTimeout(() => { armed = false; del.textContent = 'borrar'; }, 3000); return; }
+    state.data.entries = state.data.entries.filter((e) => e.id !== id);
+    if (await save()) { closeSheet(); render(); toast('borrado'); }
+  });
+  wrap.append(h('div', { class: 'btns' }, h('button', { class: 'btn', type: 'button', onclick: () => openForm(id) }, 'editar'), del));
+  openSheet(wrap);
+}
+
+/* ---------- formulario ---------- */
+function genControls(onGen) {
+  const out = h('b', {}, String(genOpts.len));
+  const len = h('input', { type: 'range', min: 8, max: 40, value: genOpts.len, 'aria-label': 'largo' });
+  const sym = h('input', { type: 'checkbox' }); sym.checked = genOpts.sym;
+  len.addEventListener('input', () => { genOpts.len = +len.value; out.textContent = len.value; });
+  sym.addEventListener('change', () => { genOpts.sym = sym.checked; });
+  return h('div', { class: 'gen' },
+    h('label', { class: 'gl' }, 'largo ', out, len),
+    h('label', { class: 'gl chk' }, sym, 'símbolos'),
+    h('button', { class: 'btn sm', type: 'button', onclick: onGen }, 'generar'));
+}
+
+function openForm(id) {
+  closeSheet();
+  const x = id ? state.data.entries.find((e) => e.id === id) : null;
+  const f = {
+    nombre: h('input', { placeholder: 'ej. Gmail personal', value: x?.nombre || '', autocomplete: 'off' }),
+    usuario: h('input', { placeholder: 'correo o usuario', value: x?.usuario || '', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' }),
+    contrasena: h('input', { type: 'password', value: x?.contrasena || '', autocomplete: 'new-password', autocapitalize: 'off', spellcheck: 'false' }),
+    url: h('input', { placeholder: 'https://…', value: x?.url || '', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' }),
+    totp: h('input', { placeholder: 'secreto base32 o enlace otpauth://', value: x?.totp || '', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' }),
+    notas: h('textarea', { rows: 3, value: x?.notas || '' }),
+  };
+  const err = h('div', { class: 'err' });
+  const lab = (t, el) => h('div', { class: 'fld' }, h('div', { class: 'lbl' }, t), el);
+  const eye = h('button', { class: 'mini', type: 'button', onclick: () => { const p = f.contrasena.type === 'password'; f.contrasena.type = p ? 'text' : 'password'; eye.textContent = p ? 'ocultar' : 'ver'; } }, 'ver');
+  const gen = () => { f.contrasena.value = genPass(genOpts.len, genOpts.sym); f.contrasena.type = 'text'; eye.textContent = 'ocultar'; };
+
+  const submit = async () => {
+    const nombre = f.nombre.value.trim();
+    if (!nombre) return (err.textContent = 'ponle un nombre.');
+    let t = f.totp.value.trim();
+    if (t) { t = normalizeTotp(t); if (!t) return (err.textContent = 'el secreto 2FA no es válido.'); }
+    const now = new Date().toISOString();
+    const vals = { nombre, usuario: f.usuario.value.trim(), contrasena: f.contrasena.value, url: f.url.value.trim(), totp: t || '', notas: f.notas.value.trim(), actualizado: now };
+    if (x) Object.assign(x, vals); else state.data.entries.push({ id: newId(), creado: now, ...vals });
+    if (await save()) { closeSheet(); render(); toast('guardado'); }
+  };
+
+  openSheet(h('div', {}, sheetHead(x ? 'editar' : 'nueva cuenta'),
+    lab('nombre', f.nombre), lab('correo / usuario', f.usuario),
+    lab('contraseña', h('div', { class: 'pwrow' }, f.contrasena, eye)),
+    genControls(gen),
+    lab('url', f.url), lab('secreto 2fa (opcional)', f.totp), lab('notas', f.notas),
+    err, h('button', { class: 'btn pri', type: 'button', onclick: submit }, 'guardar')));
+  if (!x) setTimeout(() => f.nombre.focus(), 50);
+}
+
+/* ---------- menú ---------- */
+function openMenu() {
+  closeSheet();
+  const item = (t, fn, cls = '') => h('button', { class: 'btn ' + cls, type: 'button', onclick: fn }, t);
+  openSheet(h('div', {}, sheetHead('menú'),
+    h('div', { class: 'menu' },
+      item('generar contraseña', openGenerator),
+      item('exportar respaldo (archivo)', exportBackup),
+      navigator.canShare ? item('compartir respaldo…', shareBackup) : null,
+      item('importar respaldo', openImport),
+      item('cambiar contraseña maestra', openChangePw),
+      item('borrar todo', openWipe, 'bad')),
+    h('div', { class: 'foot' }, 'datos solo en este navegador · AES-256-GCM · se bloquea a los 3 min sin uso')));
+}
+
+function openGenerator() {
+  closeSheet();
+  const out = h('div', { class: 'out' });
+  const gen = () => { out.textContent = genPass(genOpts.len, genOpts.sym); };
+  gen();
+  openSheet(h('div', {}, sheetHead('generar contraseña'), out, genControls(gen),
+    h('button', { class: 'btn pri', type: 'button', onclick: () => copy(out.textContent, 'contraseña') }, 'copiar')));
+}
+
+/* ---------- respaldo ---------- */
+async function backupText() { return JSON.stringify(await seal()); }
+function markBackup() { try { localStorage.setItem(LS_DIRTY, '0'); } catch {} if (state) render(); }
+
+async function exportBackup() {
+  const raw = await backupText();
+  const url = URL.createObjectURL(new Blob([raw], { type: 'application/json' }));
+  const a = h('a', { href: url, download: `boveda-respaldo-${today()}.json` });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
+  closeSheet(); markBackup(); toast('respaldo descargado');
+}
+
+async function shareBackup() {
+  const file = new File([await backupText()], `boveda-respaldo-${today()}.json`, { type: 'application/json' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: 'respaldo bóveda' }); closeSheet(); markBackup(); } catch {}
+  } else exportBackup();
+}
+
+function openImport() {
+  closeSheet();
+  let blob = null;
+  const hasVault = !!readRaw();
+  const file = h('input', { type: 'file' });
+  const pw = h('input', { type: 'password', placeholder: 'contraseña maestra del respaldo', autocomplete: 'off' });
+  const info = h('div', { class: 'mut' }); const err = h('div', { class: 'err' });
+  const btn = h('button', { class: 'btn pri', type: 'button', disabled: true }, 'importar');
+  file.addEventListener('change', async () => {
+    err.textContent = ''; info.textContent = ''; blob = null; btn.disabled = true;
+    const fl = file.files[0]; if (!fl) return;
+    try {
+      if (fl.size > 5e6) throw 0;
+      const j = JSON.parse(await fl.text()); if (!validBlob(j)) throw 0;
+      blob = j; btn.disabled = false; info.textContent = 'archivo listo: ' + fl.name;
+    } catch { err.textContent = 'ese archivo no es un respaldo válido.'; }
+  });
+  btn.addEventListener('click', async () => {
+    if (!blob) return; if (!pw.value) return (err.textContent = 'escribe la contraseña del respaldo.');
+    err.textContent = ''; btn.disabled = true; btn.textContent = 'descifrando…';
+    const s = await openBlob(blob, pw.value);
+    if (!s) { err.textContent = 'contraseña incorrecta para ese respaldo.'; btn.disabled = false; btn.textContent = 'importar'; return; }
+    state = s;
+    try { await persist(); localStorage.setItem(LS_DIRTY, '0'); } catch { toast('⚠ no se pudo guardar'); }
+    closeSheet(); bump(); render(); toast('importadas ' + s.data.entries.length + ' cuentas');
+  });
+  openSheet(h('div', {}, sheetHead('importar respaldo'),
+    hasVault ? h('p', { class: 'warn' }, '// esto reemplaza lo que hay guardado ahora en este navegador.') : h('p', { class: 'mut' }, '// elige el archivo .json que exportaste.'),
+    file, info, pw, err, btn));
+}
+
+function openChangePw() {
+  closeSheet();
+  const cur = h('input', { type: 'password', placeholder: 'contraseña actual', autocomplete: 'current-password' });
+  const n1 = h('input', { type: 'password', placeholder: 'nueva (mín. 10)', autocomplete: 'new-password' });
+  const n2 = h('input', { type: 'password', placeholder: 'repite la nueva', autocomplete: 'new-password' });
+  const err = h('div', { class: 'err' });
+  const btn = h('button', { class: 'btn pri', type: 'button' }, 'cambiar');
+  btn.addEventListener('click', async () => {
+    err.textContent = '';
+    if (n1.value.length < 10) return (err.textContent = 'mínimo 10 caracteres.');
+    if (n1.value !== n2.value) return (err.textContent = 'no coinciden.');
+    btn.disabled = true; btn.textContent = 'cifrando…';
+    let blob; try { blob = JSON.parse(readRaw()); } catch { blob = null; }
+    if (!validBlob(blob) || !(await openBlob(blob, cur.value))) { err.textContent = 'la contraseña actual no es correcta.'; btn.disabled = false; btn.textContent = 'cambiar'; return; }
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    state.key = await deriveKey(n1.value, salt, ITER); state.salt = salt; state.iter = ITER;
+    if (await save()) { closeSheet(); toast('contraseña maestra cambiada'); }
+    else { btn.disabled = false; btn.textContent = 'cambiar'; }
+  });
+  openSheet(h('div', {}, sheetHead('cambiar contraseña maestra'), cur, n1, n2, err, btn,
+    h('div', { class: 'foot' }, 'los respaldos viejos siguen usando la contraseña vieja.')));
+}
+
+function openWipe() {
+  closeSheet();
+  const t = h('input', { placeholder: 'escribe BORRAR', autocomplete: 'off', autocapitalize: 'characters' });
+  const btn = h('button', { class: 'btn bad', type: 'button' }, 'borrar todo para siempre');
+  btn.addEventListener('click', () => {
+    if (t.value.trim() !== 'BORRAR') return toast('escribe BORRAR para confirmar');
+    try { localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_DIRTY); } catch {}
+    state = null; closeSheet(); render(); toast('bóveda borrada');
+  });
+  openSheet(h('div', {}, sheetHead('borrar todo'),
+    h('p', { class: 'warn' }, '// elimina la bóveda de este navegador. si no tienes respaldo, no se recupera.'), t, btn));
+}
+
+/* ---------- arranque ---------- */
+if (window.crypto && window.crypto.subtle) {
+  try { navigator.storage?.persist?.(); } catch {}
+  render();
+} else {
+  $('#app').append(brand(), h('div', { class: 'err' }, 'este navegador o contexto no soporta cifrado. abre la página por https.'));
+}
+</script>
+</body>
+</html>
